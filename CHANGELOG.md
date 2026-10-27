@@ -10,4 +10,5 @@ Formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões
 - Comandos `lab:users:block`, `lab:users:unblock` e `lab:users:force-password-reset`.
 - Todos os comandos de usuários e sessões exigem `App\LabKit\UserActions` no app e passam pela autorização dele (`allows`); recusa responde `forbidden`.
 - Registro de cada chamada no log do app: comando, operação, operador e resultado, sem parâmetros nem dados de resposta, inclusive quando o app lança exceção (`internal_error`).
+- Teste que garante que o pacote não registra nenhuma rota HTTP.
 - Comando `lab:capabilities`: devolve em JSON a versão do Lab Kit e os comandos `lab:*` que o app atende.
