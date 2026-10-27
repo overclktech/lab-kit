@@ -8,6 +8,14 @@ it('reports the lab kit version and the lab commands as json', function (): void
 
     expect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR))->toBe([
         'version' => InstalledVersions::getPrettyVersion('overclock/lab-kit'),
-        'commands' => ['lab:capabilities'],
+        'commands' => [
+            'lab:capabilities',
+            'lab:sessions',
+            'lab:sessions:revoke',
+            'lab:users',
+            'lab:users:block',
+            'lab:users:force-password-reset',
+            'lab:users:unblock',
+        ],
     ]);
 });

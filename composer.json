@@ -23,7 +23,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Overclock\\LabKit\\Tests\\": "tests/"
+            "Overclock\\LabKit\\Tests\\": "tests/",
+            "App\\LabKit\\": "tests/Fixtures/LabKit/"
         }
     },
     "extra": {
