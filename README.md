@@ -61,6 +61,8 @@ O `lint` roda Pint, Rector e Larastan. O CI roda o mesmo em todo pull request. O
 
 ## Operação
 
+Cada chamada do Lab fica no log do app (`Lab Kit call`), com comando, ID da operação, operador e resultado. Parâmetros e respostas nunca entram no log.
+
 Para tirar o pacote de um app, rode `composer remove overclock/lab-kit`. O app segue funcionando; só os recursos do console do Lab deixam de responder.
 
 ## Decisões

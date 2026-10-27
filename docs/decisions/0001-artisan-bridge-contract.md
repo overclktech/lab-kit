@@ -25,6 +25,8 @@ Option 2, with these rules:
 
 Option 1 was rejected because arguments show up in process listings and the executor sends parameters over standard input. Option 3 was rejected because the app would expose an administration route to the internet.
 
+- Every call is written to the app log as `Lab Kit call` with the command, operation ID, operator and result code. Params and response data are never logged, since a search or a listing may carry personal data. The log, not a table, keeps `composer remove` free of leftovers.
+
 ### Consequences
 
 - Good: one parser, one validator and one response shape for every `lab:*` command.

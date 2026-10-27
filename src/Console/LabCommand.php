@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use JsonException;
 use Overclock\LabKit\LabException;
@@ -18,6 +19,10 @@ use Symfony\Component\Console\Input\StreamableInputInterface;
 abstract class LabCommand extends Command
 {
     private const int MAX_INPUT_BYTES = 65536;
+
+    private ?string $operationId = null;
+
+    private ?Operator $operator = null;
 
     /**
      * @return array<string, mixed>
@@ -51,17 +56,17 @@ abstract class LabCommand extends Command
         }
 
         $validated = $validator->validated();
+        $this->operationId = Arr::string($validated, 'payload.operation_id');
+        $this->operator = new Operator(Arr::string($validated, 'payload.operator.id'), Arr::string($validated, 'payload.operator.name'));
 
         try {
-            $data = $this->respond(
-                Arr::array($validated, 'payload.params'),
-                new Operator(Arr::string($validated, 'payload.operator.id'), Arr::string($validated, 'payload.operator.name')),
-            );
+            $data = $this->respond(Arr::array($validated, 'payload.params'), $this->operator);
         } catch (LabException $exception) {
             return $this->reject($exception->reason, $exception->getMessage());
         }
 
         $this->line(json_encode(['ok' => true, 'data' => $data], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        Log::info('Lab Kit call', $this->callContext('ok'));
 
         return self::SUCCESS;
     }
@@ -113,7 +118,22 @@ abstract class LabCommand extends Command
     private function reject(string $code, string $message): int
     {
         $this->line(json_encode(['ok' => false, 'error' => ['code' => $code, 'message' => $message]], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        Log::warning('Lab Kit call', $this->callContext($code));
 
         return self::FAILURE;
+    }
+
+    /**
+     * @return array<string, string|null>
+     */
+    private function callContext(string $result): array
+    {
+        return [
+            'command' => $this->getName(),
+            'operation_id' => $this->operationId,
+            'operator_id' => $this->operator?->id,
+            'operator_name' => $this->operator?->name,
+            'result' => $result,
+        ];
     }
 }
