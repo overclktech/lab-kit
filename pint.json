@@ -1,0 +1,7 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "Pint/phpdoc_type_annotations_only": true,
+        "no_empty_comment": true
+    }
+}
