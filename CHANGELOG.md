@@ -6,4 +6,6 @@ Formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões
 
 ### Added
 
+- Comandos `lab:users`, `lab:sessions` e `lab:sessions:revoke`, com entrada e saída em JSON pela entrada e saída padrão.
+- Comandos `lab:users:block`, `lab:users:unblock` e `lab:users:force-password-reset`, ativos quando o app tem `App\LabKit\UserActions`.
 - Comando `lab:capabilities`: devolve em JSON a versão do Lab Kit e os comandos `lab:*` que o app atende.

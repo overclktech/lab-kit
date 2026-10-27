@@ -20,6 +20,6 @@ Pacote Composer opcional (`overclock/lab-kit`) que liga o app Laravel do cliente
 ## Definição de pronto
 
 1. Critérios de aceite da história cumpridos, com teste.
-2. `composer lint` e `composer test` verdes: Pint, Rector, Larastan (nível máximo) e Pest.
+2. `composer lint` e `composer test` verdes: Pint, Rector, Larastan (nível 8) e Pest.
 3. `composer audit` e `npm audit` sem vulnerabilidade.
 4. README e CHANGELOG atualizados no mesmo pull request.
