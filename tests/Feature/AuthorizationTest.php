@@ -1,6 +1,7 @@
 <?php
 
 use App\LabKit\UserActions;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Orchestra\Testbench\Factories\UserFactory;
 use Overclock\LabKit\Ability;
@@ -43,7 +44,7 @@ it('refuses to revoke sessions when the app denies it, changing nothing', functi
 
 it('answers forbidden when a policy of the app denies an action', function (): void {
     $user = UserFactory::new()->create();
-    UserActions::$refuseActions = true;
+    UserActions::$throws = new AuthorizationException('Policy denied for user secret-marker.');
 
     [$exitCode, $response] = lab('lab:users:block', payload(['user_id' => (string) $user->id]));
 

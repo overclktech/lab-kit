@@ -2,11 +2,11 @@
 
 namespace App\LabKit;
 
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Overclock\LabKit\Ability;
 use Overclock\LabKit\Contracts\UserActions as UserActionsContract;
 use Overclock\LabKit\Operator;
+use Throwable;
 
 class UserActions implements UserActionsContract
 {
@@ -16,7 +16,7 @@ class UserActions implements UserActionsContract
     /** @var list<Ability> */
     public static array $denied = [];
 
-    public static bool $refuseActions = false;
+    public static ?Throwable $throws = null;
 
     public function allows(Ability $ability, Operator $operator, ?Authenticatable $user = null): bool
     {
@@ -25,8 +25,8 @@ class UserActions implements UserActionsContract
 
     public function block(Authenticatable $user, Operator $operator): void
     {
-        if (self::$refuseActions) {
-            throw new AuthorizationException('Policy denied for user secret-marker.');
+        if (self::$throws instanceof Throwable) {
+            throw self::$throws;
         }
 
         self::$calls[] = ['block', $user->getAuthIdentifier(), $operator];

@@ -9,7 +9,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 pest()->extend(TestCase::class)->use(RefreshDatabase::class)->beforeEach(function (): void {
     UserActions::$calls = [];
     UserActions::$denied = [];
-    UserActions::$refuseActions = false;
+    UserActions::$throws = null;
 })->in('Feature');
 
 /**
