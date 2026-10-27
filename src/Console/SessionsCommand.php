@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Overclock\LabKit\Ability;
 use Overclock\LabKit\Operator;
 
 #[Description('Lista as sessões abertas de um usuário')]
@@ -23,6 +24,7 @@ class SessionsCommand extends LabCommand
     protected function respond(array $params, Operator $operator): array
     {
         $user = $this->findUser(Arr::string($params, 'user_id'));
+        $this->authorize(Ability::ViewSessions, $operator, $user);
 
         return [
             'sessions' => self::sessionsOf($user->getAuthIdentifier())

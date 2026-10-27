@@ -3,6 +3,7 @@
 namespace Overclock\LabKit\Console;
 
 use DateTimeInterface;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -12,13 +13,18 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use JsonException;
+use Overclock\LabKit\Ability;
+use Overclock\LabKit\Contracts\UserActions;
 use Overclock\LabKit\LabException;
 use Overclock\LabKit\Operator;
 use Symfony\Component\Console\Input\StreamableInputInterface;
+use Throwable;
 
 abstract class LabCommand extends Command
 {
     private const int MAX_INPUT_BYTES = 65536;
+
+    private const string FORBIDDEN_MESSAGE = 'O app não autorizou esta operação para o operador.';
 
     private ?string $operationId = null;
 
@@ -37,6 +43,8 @@ abstract class LabCommand extends Command
 
     public function handle(): int
     {
+        $this->operationId = null;
+        $this->operator = null;
         $input = $this->readInput();
 
         if (strlen($input) > self::MAX_INPUT_BYTES) {
@@ -63,12 +71,23 @@ abstract class LabCommand extends Command
             $data = $this->respond(Arr::array($validated, 'payload.params'), $this->operator);
         } catch (LabException $exception) {
             return $this->reject($exception->reason, $exception->getMessage());
+        } catch (AuthorizationException) {
+            return $this->reject('forbidden', self::FORBIDDEN_MESSAGE);
+        } catch (Throwable) {
+            return $this->reject('internal_error', 'O app encontrou um erro ao executar o comando.');
         }
 
         $this->line(json_encode(['ok' => true, 'data' => $data], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         Log::info('Lab Kit call', $this->callContext('ok'));
 
         return self::SUCCESS;
+    }
+
+    protected function authorize(Ability $ability, Operator $operator, ?Authenticatable $user = null): void
+    {
+        if (! app(UserActions::class)->allows($ability, $operator, $user)) {
+            throw new LabException('forbidden', self::FORBIDDEN_MESSAGE);
+        }
     }
 
     protected function userProvider(): EloquentUserProvider

@@ -18,10 +18,10 @@ The Lab manages users and sessions inside each client app through the executor a
 Option 2, with these rules:
 
 - Input: `{"operation_id": "...", "operator": {"id": "...", "name": "..."}, "params": {...}}`, at most 64 KiB. Unknown keys are refused at every level; each command validates its own `params`.
-- Output: `{"ok": true, "data": {...}}` with exit code 0, or `{"ok": false, "error": {"code": "...", "message": "..."}}` with exit code 1. Codes: `invalid_json`, `input_too_large`, `invalid_input`, `not_found`, `unsupported`.
+- Output: `{"ok": true, "data": {...}}` with exit code 0, or `{"ok": false, "error": {"code": "...", "message": "..."}}` with exit code 1. Codes: `invalid_json`, `input_too_large`, `invalid_input`, `not_found`, `forbidden`, `unsupported`.
 - Listing users and sessions is generic: users come from the Eloquent user provider `users`, sessions from the `database` session table.
 - Session IDs never leave the app: each session is identified by the SHA-256 of its ID (`handle`). Revoking all sessions also rotates the remember token.
-- Blocking, unblocking and forcing a password reset are delegated to `App\LabKit\UserActions`, a class in the app that implements `Overclock\LabKit\Contracts\UserActions` and calls the app's own Actions and Policies. The package discovers it by name; without it, those commands are not registered and `lab:capabilities` does not list them.
+- Every user and session command goes through `App\LabKit\UserActions`, a class in the app that implements `Overclock\LabKit\Contracts\UserActions`. Reading users, reading sessions and revoking sessions ask its `allows` method first, which applies the app's Policies; blocking, unblocking and forcing a password reset call the app's own Actions. A denial, or an `AuthorizationException` from the app, answers `forbidden` without data. The package discovers the class by name; without it, only `lab:capabilities` is registered, so access is refused by default.
 
 Option 1 was rejected because arguments show up in process listings and the executor sends parameters over standard input. Option 3 was rejected because the app would expose an administration route to the internet.
 
