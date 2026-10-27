@@ -17,10 +17,6 @@ Pacote Composer opcional (`overclock/lab-kit`) que liga o app Laravel do cliente
 - Semver com CHANGELOG (Keep a Changelog); quebra de contrato só em versão maior, com guia de atualização.
 - Commits em Conventional Commits, em inglês, sem coautoria de IA. Nunca push na `main`.
 
-## Contornos em vigor
-
-- A `main` não tem proteção no GitHub (org no plano Free). O hook `pre-push` recusa push direto nela; revisar quando a org assinar o Team.
-
 ## Definição de pronto
 
 1. Critérios de aceite da história cumpridos, com teste.
