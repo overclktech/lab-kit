@@ -26,7 +26,7 @@ No app do cliente:
 composer require overclock/lab-kit
 ```
 
-Para liberar bloqueio, desbloqueio e troca de senha forçada, o app cria `app/LabKit/UserActions.php`, que implementa `Overclock\LabKit\Contracts\UserActions` chamando as Actions do próprio app. Sem essa classe, o Lab só lista usuários e sessões e encerra sessões.
+Para o Lab gerenciar usuários e sessões, o app cria `app/LabKit/UserActions.php`, que implementa `Overclock\LabKit\Contracts\UserActions`: `allows` decide, pelas Policies do app, se o operador pode listar usuários, listar sessões e encerrar sessões; `block`, `unblock` e `forcePasswordReset` chamam as Actions do próprio app. Sem essa classe, só o `lab:capabilities` existe.
 
 Cada comando `lab:*` lê um JSON da entrada padrão e responde um JSON na saída padrão ([ADR 0001](docs/decisions/0001-artisan-bridge-contract.md)):
 

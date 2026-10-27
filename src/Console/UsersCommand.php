@@ -7,6 +7,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Overclock\LabKit\Ability;
 use Overclock\LabKit\Operator;
 
 #[Description('Lista os usuários do app, com busca por nome ou e-mail')]
@@ -25,6 +26,8 @@ class UsersCommand extends LabCommand
 
     protected function respond(array $params, Operator $operator): array
     {
+        $this->authorize(Ability::ViewUsers, $operator);
+
         $search = Arr::get($params, 'search');
         $page = Arr::get($params, 'page');
 

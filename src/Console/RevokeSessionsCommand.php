@@ -7,6 +7,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Overclock\LabKit\Ability;
 use Overclock\LabKit\LabException;
 use Overclock\LabKit\Operator;
 
@@ -25,6 +26,7 @@ class RevokeSessionsCommand extends LabCommand
     protected function respond(array $params, Operator $operator): array
     {
         $user = $this->findUser(Arr::string($params, 'user_id'));
+        $this->authorize(Ability::RevokeSessions, $operator, $user);
         $sessions = SessionsCommand::sessionsOf($user->getAuthIdentifier());
 
         $handle = Arr::get($params, 'handle');

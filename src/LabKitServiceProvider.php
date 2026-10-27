@@ -29,10 +29,17 @@ class LabKitServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->commands([CapabilitiesCommand::class, UsersCommand::class, SessionsCommand::class, RevokeSessionsCommand::class]);
+        $this->commands([CapabilitiesCommand::class]);
 
         if ($this->app->bound(UserActions::class)) {
-            $this->commands([BlockUserCommand::class, UnblockUserCommand::class, ForcePasswordResetUserCommand::class]);
+            $this->commands([
+                UsersCommand::class,
+                SessionsCommand::class,
+                RevokeSessionsCommand::class,
+                BlockUserCommand::class,
+                UnblockUserCommand::class,
+                ForcePasswordResetUserCommand::class,
+            ]);
         }
     }
 }

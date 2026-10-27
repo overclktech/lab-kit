@@ -1,11 +1,16 @@
 <?php
 
+use App\LabKit\UserActions;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Overclock\LabKit\Tests\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
-pest()->extend(TestCase::class)->use(RefreshDatabase::class)->in('Feature');
+pest()->extend(TestCase::class)->use(RefreshDatabase::class)->beforeEach(function (): void {
+    UserActions::$calls = [];
+    UserActions::$denied = [];
+    UserActions::$refuseActions = false;
+})->in('Feature');
 
 /**
  * @return array{int, array<string, mixed>}
