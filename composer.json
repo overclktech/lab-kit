@@ -1,0 +1,52 @@
+{
+    "name": "overclock/lab-kit",
+    "description": "Optional bridge between a Laravel app and the Overclock Lab panel.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^13.0"
+    },
+    "require-dev": {
+        "driftingly/rector-laravel": "^2.7",
+        "larastan/larastan": "^3.13",
+        "laravel/pint": "^1.32",
+        "orchestra/testbench": "^11.3",
+        "pestphp/pest": "^5.3",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "rector/rector": "^2.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Overclock\\LabKit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Overclock\\LabKit\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Overclock\\LabKit\\LabKitServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "lint": [
+            "pint --test",
+            "rector --dry-run",
+            "phpstan analyse --memory-limit=1G"
+        ],
+        "test": "pest"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
