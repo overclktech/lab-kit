@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Overclock\LabKit\Resources\LabResource;
 use Overclock\LabKit\Tests\Fixtures\Actions\RenameMember;
 use Overclock\LabKit\Tests\Fixtures\Models\Member;
+use Overclock\LabKit\Tests\Fixtures\Models\Plain;
 use Overclock\LabKit\Tests\Fixtures\Policies\MemberPolicy;
 
 beforeEach(function (): void {
@@ -12,35 +14,36 @@ beforeEach(function (): void {
     RenameMember::$calls = [];
     RenameMember::$fails = false;
     Gate::policy(Member::class, MemberPolicy::class);
+    Gate::policy(Plain::class, MemberPolicy::class);
+    $this->freezeTime();
     $this->member = Member::query()->create(['name' => 'Ana', 'email' => 'ana@example.com', 'password' => 'hash']);
 });
 
-function runAction(Member $member, array $overrides = []): array
+function runAction(Model $member, array $overrides = []): array
 {
     return lab('lab:resources:action', payload([
         'resource' => 'member',
         'key' => (string) $member->getKey(),
         'action' => 'rename',
-        'version' => LabResource::version($member),
+        'version' => LabResource::version($member->fresh()),
         'confirmed' => true,
         ...$overrides,
     ]));
 }
 
 it('runs the app action on the record and returns its result and new version', function (): void {
-    $this->travel(1)->minutes();
+    $read = LabResource::version($this->member->fresh());
     [$exitCode, $response] = runAction($this->member);
 
     expect($exitCode)->toBe(0)
         ->and($response['data']['result'])->toBe(['renamed' => true])
-        ->and($response['data']['version'])->not->toBe(LabResource::version($this->member))
+        ->and($response['data']['version'])->toBe(LabResource::version($this->member->fresh()))->not->toBe($read)
         ->and($this->member->fresh()->name)->toBe('Renomeado')
         ->and(RenameMember::$calls)->toBe([[(string) $this->member->getKey(), '7']]);
 });
 
-it('refuses a record edited since it was read', function (): void {
-    $read = LabResource::version($this->member);
-    $this->travel(1)->minutes();
+it('refuses a record edited in the same second since it was read', function (): void {
+    $read = LabResource::version($this->member->fresh());
     $this->member->forceFill(['email' => 'outra@example.com'])->save();
 
     [$exitCode, $response] = runAction($this->member, ['version' => $read]);
@@ -49,6 +52,41 @@ it('refuses a record edited since it was read', function (): void {
         ->and($response['error']['code'])->toBe('conflict')
         ->and(RenameMember::$calls)->toBe([])
         ->and($this->member->fresh()->name)->toBe('Ana');
+});
+
+it('runs only the first of two actions sent with the same version', function (): void {
+    $read = LabResource::version($this->member->fresh());
+
+    [$first] = runAction($this->member, ['version' => $read]);
+    [$second, $response] = runAction($this->member, ['version' => $read]);
+
+    expect([$first, $second])->toBe([0, 1])
+        ->and($response['error']['code'])->toBe('conflict')
+        ->and(RenameMember::$calls)->toHaveCount(1);
+});
+
+it('protects a model without timestamps the same way', function (): void {
+    $plain = Plain::query()->findOrFail($this->member->getKey());
+    $read = LabResource::version($plain);
+    $plain->forceFill(['email' => 'outra@example.com'])->save();
+
+    [$exitCode, $response] = runAction($plain, ['resource' => 'plain', 'version' => $read]);
+
+    expect($exitCode)->toBe(1)
+        ->and($response['error']['code'])->toBe('conflict')
+        ->and(RenameMember::$calls)->toBe([]);
+});
+
+it('refuses and rolls back an action that leaves the record unchanged', function (): void {
+    [$exitCode, $response] = runAction(Plain::query()->findOrFail($this->member->getKey()), ['resource' => 'plain', 'action' => 'touch-nothing']);
+
+    expect($exitCode)->toBe(1)->and($response['error']['code'])->toBe('unchanged');
+});
+
+it('requires the version read from the listing', function (): void {
+    [$exitCode, $response] = runAction($this->member, ['version' => null]);
+
+    expect($exitCode)->toBe(1)->and($response['error']['code'])->toBe('invalid_input');
 });
 
 it('requires confirmation and recent two-factor when the action declares them', function (): void {

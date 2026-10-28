@@ -44,7 +44,7 @@ class OrderResource extends LabResource
 
 A leitura passa pela Policy do model: o método `labViewAny(Operator $operator)` decide; sem ele, o recurso é recusado. `lab:resources` descreve os recursos que o operador pode ver e `lab:resources:list` lista os registros (`{"resource":"order","filters":{"number":"1001"},"page":1}`). Campo com nome sensível (senha, token, segredo, 2FA) ou oculto no model (`$hidden`) não pode ser declarado.
 
-Ações de negócio chamam o código do app ([ADR 0003](docs/decisions/0003-resource-actions.md)): o recurso declara `Action::make('refund', RefundOrder::class)->confirm()->requiresMfa()`, a classe implementa `Overclock\LabKit\Contracts\ResourceAction` e a Policy do model decide em `labRun(Operator $operator, Model $record, string $action)`. `lab:resources:action` recebe a versão (`_version`) que a listagem mostrou e recusa com `conflict` se o registro mudou.
+Ações de negócio chamam o código do app ([ADR 0003](docs/decisions/0003-resource-actions.md)): o recurso declara `Action::make('refund', RefundOrder::class)->confirm()->requiresMfa()`, a classe implementa `Overclock\LabKit\Contracts\ResourceAction` e a Policy do model decide em `labRun(Operator $operator, Model $record, string $action)`. `lab:resources:action` recebe a versão (`_version`) que a listagem mostrou e recusa com `conflict` se o registro mudou, mesmo no mesmo segundo. A ação precisa registrar o que fez no próprio registro (um estado, uma data); se o registro ficar igual, a chamada é desfeita e responde `unchanged`.
 
 Cada comando `lab:*` lê um JSON da entrada padrão e responde um JSON na saída padrão ([ADR 0001](docs/decisions/0001-artisan-bridge-contract.md)):
 

@@ -26,7 +26,7 @@ class ResourceActionCommand extends LabCommand
             'resource' => ['required', 'string', 'max:64'],
             'key' => ['required', 'string', 'max:64'],
             'action' => ['required', 'string', 'max:64'],
-            'version' => ['present', 'nullable', 'string', 'max:64'],
+            'version' => ['required', 'string', 'size:64'],
             'confirmed' => ['sometimes', 'boolean'],
             'mfa' => ['sometimes', 'boolean'],
         ];
@@ -59,14 +59,21 @@ class ResourceActionCommand extends LabCommand
                 $this->forbid();
             }
 
-            if (LabResource::version($record) !== Arr::get($params, 'version')) {
+            $version = LabResource::version($record);
+
+            if (! hash_equals($version, Arr::string($params, 'version'))) {
                 throw new LabException('conflict', 'O registro mudou desde a leitura. Atualize e tente de novo.');
             }
 
             $result = $handler->handle($record, $operator);
-            $record = $record->fresh() ?? $record;
+            $changed = $resource->query()->whereKey($record->getKey())->first();
+            $newVersion = $changed === null ? null : LabResource::version($changed);
 
-            return ['result' => $result, 'key' => (string) $record->getKey(), 'version' => LabResource::version($record)];
+            if ($newVersion === $version) {
+                throw new LabException('unchanged', 'A ação não alterou o registro, então uma repetição não seria detectada. A ação precisa registrar o que fez no próprio registro.');
+            }
+
+            return ['result' => $result, 'key' => (string) $record->getKey(), 'version' => $newVersion];
         });
     }
 }

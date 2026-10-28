@@ -2,7 +2,6 @@
 
 namespace Overclock\LabKit\Resources;
 
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -56,12 +55,12 @@ abstract class LabResource
         return is_object($policy) && method_exists($policy, 'labRun') && $policy->labRun($operator, $record, $action->name) === true;
     }
 
-    public static function version(Model $record): ?string
+    public static function version(Model $record): string
     {
-        $column = $record->usesTimestamps() ? $record->getUpdatedAtColumn() : null;
-        $updatedAt = $column === null ? null : $record->getAttribute($column);
+        $attributes = $record->getAttributes();
+        ksort($attributes);
 
-        return $updatedAt instanceof DateTimeInterface ? $updatedAt->format('Y-m-d\TH:i:s.uP') : null;
+        return hash_hmac('sha256', $record::class.serialize($attributes), app('encrypter')->getKey());
     }
 
     /**
