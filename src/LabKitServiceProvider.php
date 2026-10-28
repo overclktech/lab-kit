@@ -7,6 +7,7 @@ use Overclock\LabKit\Console\BlockUserCommand;
 use Overclock\LabKit\Console\CapabilitiesCommand;
 use Overclock\LabKit\Console\ForcePasswordResetUserCommand;
 use Overclock\LabKit\Console\ListResourceCommand;
+use Overclock\LabKit\Console\ResourceActionCommand;
 use Overclock\LabKit\Console\ResourcesCommand;
 use Overclock\LabKit\Console\RevokeSessionsCommand;
 use Overclock\LabKit\Console\SessionsCommand;
@@ -34,7 +35,7 @@ class LabKitServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->commands([CapabilitiesCommand::class, ResourcesCommand::class, ListResourceCommand::class]);
+        $this->commands([CapabilitiesCommand::class, ResourcesCommand::class, ListResourceCommand::class, ResourceActionCommand::class]);
 
         if ($this->app->bound(UserActions::class)) {
             $this->commands([

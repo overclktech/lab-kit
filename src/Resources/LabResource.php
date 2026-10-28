@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Overclock\LabKit\LabException;
 use Overclock\LabKit\Operator;
 
 abstract class LabResource
@@ -28,11 +29,55 @@ abstract class LabResource
         return Str::kebab(Str::beforeLast(class_basename(static::class), 'Resource'));
     }
 
+    /**
+     * @return list<Action>
+     */
+    public function actions(): array
+    {
+        return [];
+    }
+
+    public function action(string $name): ?Action
+    {
+        return collect($this->actions())->first(fn (Action $action): bool => $action->name === $name);
+    }
+
     public function allows(Operator $operator): bool
     {
         $policy = Gate::getPolicyFor(static::$model);
 
         return is_object($policy) && method_exists($policy, 'labViewAny') && $policy->labViewAny($operator) === true;
+    }
+
+    public function allowsAction(Operator $operator, Model $record, Action $action): bool
+    {
+        $policy = Gate::getPolicyFor(static::$model);
+
+        return is_object($policy) && method_exists($policy, 'labRun') && $policy->labRun($operator, $record, $action->name) === true;
+    }
+
+    public static function version(Model $record): string
+    {
+        $attributes = array_map(self::comparable(...), $record->getAttributes());
+        ksort($attributes);
+
+        return hash_hmac('sha256', $record::class.serialize($attributes), app('encrypter')->getKey());
+    }
+
+    private static function comparable(mixed $value): mixed
+    {
+        if (! is_resource($value)) {
+            return $value;
+        }
+
+        if (! stream_get_meta_data($value)['seekable']) {
+            throw new LabException('unsupported', 'O registro tem um campo binário que não pode ser lido para conferir a versão.');
+        }
+
+        $contents = stream_get_contents($value, null, 0);
+        rewind($value);
+
+        return ['stream', $contents];
     }
 
     /**

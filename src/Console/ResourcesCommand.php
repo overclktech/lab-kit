@@ -5,6 +5,7 @@ namespace Overclock\LabKit\Console;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Overclock\LabKit\Operator;
+use Overclock\LabKit\Resources\Action;
 use Overclock\LabKit\Resources\Field;
 use Overclock\LabKit\Resources\LabResource;
 use Overclock\LabKit\Resources\Resources;
@@ -31,6 +32,7 @@ class ResourcesCommand extends LabCommand
                 ->map(fn (LabResource $resource, string $name): array => [
                     'name' => $name,
                     'fields' => array_map(fn (Field $field): array => $field->describe(), $resource->visibleFields()),
+                    'actions' => array_map(fn (Action $action): array => $action->describe(), $resource->actions()),
                 ])
                 ->values()
                 ->all(),

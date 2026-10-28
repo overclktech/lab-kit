@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Overclock\LabKit\LabException;
 use Overclock\LabKit\Operator;
 use Overclock\LabKit\Resources\Field;
+use Overclock\LabKit\Resources\LabResource;
 use Overclock\LabKit\Resources\Resources;
 
 #[Description('Lista os registros de um recurso, com filtros e paginação')]
@@ -57,7 +58,11 @@ class ListResourceCommand extends LabCommand
         return [
             'resource' => $name,
             'rows' => $records->getCollection()->map(
-                fn (Model $record): array => $fields->map(fn (Field $field): string|int|float|bool|null => $field->present($record))->all(),
+                fn (Model $record): array => [
+                    '_key' => (string) $record->getKey(),
+                    '_version' => LabResource::version($record),
+                    ...$fields->map(fn (Field $field): string|int|float|bool|null => $field->present($record))->all(),
+                ],
             )->all(),
             'page' => $records->currentPage(),
             'per_page' => $records->perPage(),
