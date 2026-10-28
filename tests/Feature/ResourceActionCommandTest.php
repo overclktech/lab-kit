@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
+use Overclock\LabKit\LabException;
 use Overclock\LabKit\Resources\LabResource;
 use Overclock\LabKit\Tests\Fixtures\Actions\RenameMember;
 use Overclock\LabKit\Tests\Fixtures\Models\Member;
@@ -125,4 +126,27 @@ it('rolls back what the action changed when it fails, without leaking the error'
         ->and($response['error']['code'])->toBe('internal_error')
         ->and(json_encode($response))->not->toContain('secret-marker')
         ->and($this->member->fresh()->name)->toBe('Ana');
+});
+
+it('versions binary columns by their content and leaves the stream readable', function (): void {
+    $stream = function (string $contents) {
+        $handle = fopen('php://memory', 'r+');
+        fwrite($handle, $contents);
+        rewind($handle);
+
+        return $handle;
+    };
+    $first = (new Member)->setRawAttributes(['id' => 1, 'avatar' => $stream("\x00\xff")]);
+    $second = (new Member)->setRawAttributes(['id' => 1, 'avatar' => $stream("\x01\xff")]);
+    $same = (new Member)->setRawAttributes(['id' => 1, 'avatar' => $stream("\x00\xff")]);
+
+    expect(LabResource::version($first))->not->toBe(LabResource::version($second))
+        ->and(LabResource::version($first))->toBe(LabResource::version($same))
+        ->and(stream_get_contents($first->getAttributes()['avatar']))->toBe("\x00\xff");
+});
+
+it('refuses to version a binary column it cannot read again', function (): void {
+    $member = (new Member)->setRawAttributes(['id' => 1, 'avatar' => popen('printf x', 'r')]);
+
+    expect(fn (): string => LabResource::version($member))->toThrow(LabException::class);
 });
