@@ -4,6 +4,8 @@ Formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-28
+
 ### Added
 
 - Licença Apache-2.0 e distribuição pública pelo Packagist, sem token no build do app.
