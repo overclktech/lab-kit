@@ -28,6 +28,22 @@ composer require overclock/lab-kit
 
 Para o Lab gerenciar usuários e sessões, o app cria `app/LabKit/UserActions.php`, que implementa `Overclock\LabKit\Contracts\UserActions`: `allows` decide, pelas Policies do app, se o operador pode listar usuários, listar sessões e encerrar sessões; `block`, `unblock` e `forcePasswordReset` chamam as Actions do próprio app. Sem essa classe, só o `lab:capabilities` existe.
 
+Para o console de dados, o app declara recursos em `app/LabKit/`, um arquivo `*Resource.php` por recurso ([ADR 0002](docs/decisions/0002-read-only-data-resources.md)):
+
+```php
+class OrderResource extends LabResource
+{
+    public static string $model = Order::class;
+
+    public function fields(): array
+    {
+        return [Field::id(), Field::text('number')->filterable(), Field::money('total'), Field::dateTime('created_at')];
+    }
+}
+```
+
+A leitura passa pela Policy do model: o método `labViewAny(Operator $operator)` decide; sem ele, o recurso é recusado. `lab:resources` descreve os recursos que o operador pode ver e `lab:resources:list` lista os registros (`{"resource":"order","filters":{"number":"1001"},"page":1}`). Campo com nome sensível (senha, token, segredo, 2FA) ou oculto no model (`$hidden`) não pode ser declarado.
+
 Cada comando `lab:*` lê um JSON da entrada padrão e responde um JSON na saída padrão ([ADR 0001](docs/decisions/0001-artisan-bridge-contract.md)):
 
 ```bash

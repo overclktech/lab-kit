@@ -9,6 +9,11 @@ use Overclock\LabKit\LabKitServiceProvider;
 #[WithMigration]
 abstract class TestCase extends Orchestra
 {
+    protected function defineEnvironment($app): void
+    {
+        $app->useAppPath(__DIR__.'/Fixtures');
+    }
+
     protected function getPackageProviders($app): array
     {
         return [LabKitServiceProvider::class];
