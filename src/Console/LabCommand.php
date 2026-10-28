@@ -86,8 +86,13 @@ abstract class LabCommand extends Command
     protected function authorize(Ability $ability, Operator $operator, ?Authenticatable $user = null): void
     {
         if (! app(UserActions::class)->allows($ability, $operator, $user)) {
-            throw new LabException('forbidden', self::FORBIDDEN_MESSAGE);
+            $this->forbid();
         }
+    }
+
+    protected function forbid(): never
+    {
+        throw new LabException('forbidden', self::FORBIDDEN_MESSAGE);
     }
 
     protected function userProvider(): EloquentUserProvider

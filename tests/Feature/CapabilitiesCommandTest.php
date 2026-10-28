@@ -10,6 +10,8 @@ it('reports the lab kit version and the lab commands as json', function (): void
         'version' => InstalledVersions::getPrettyVersion('overclock/lab-kit'),
         'commands' => [
             'lab:capabilities',
+            'lab:resources',
+            'lab:resources:list',
             'lab:sessions',
             'lab:sessions:revoke',
             'lab:users',
