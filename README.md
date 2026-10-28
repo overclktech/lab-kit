@@ -14,7 +14,7 @@ Pacote Composer opcional que liga o app Laravel do cliente ao painel do Lab. Pel
 
 ## Pré-requisitos
 
-- PHP 8.4
+- PHP 8.4 ou 8.5
 - Laravel 13
 - Composer 2 e Node 22 (só para desenvolver o pacote)
 
