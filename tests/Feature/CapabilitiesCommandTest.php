@@ -11,6 +11,7 @@ it('reports the lab kit version and the lab commands as json', function (): void
         'commands' => [
             'lab:capabilities',
             'lab:resources',
+            'lab:resources:action',
             'lab:resources:list',
             'lab:sessions',
             'lab:sessions:revoke',

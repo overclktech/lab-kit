@@ -18,7 +18,7 @@ The Lab manages users and sessions inside each client app through the executor a
 Option 2, with these rules:
 
 - Input: `{"operation_id": "...", "operator": {"id": "...", "name": "..."}, "params": {...}}`, at most 64 KiB. Unknown keys are refused at every level; each command validates its own `params`.
-- Output: `{"ok": true, "data": {...}}` with exit code 0, or `{"ok": false, "error": {"code": "...", "message": "..."}}` with exit code 1. Codes: `invalid_json`, `input_too_large`, `invalid_input`, `not_found`, `forbidden`, `unsupported`.
+- Output: `{"ok": true, "data": {...}}` with exit code 0, or `{"ok": false, "error": {"code": "...", "message": "..."}}` with exit code 1. Codes: `invalid_json`, `input_too_large`, `invalid_input`, `not_found`, `forbidden`, `unsupported`, `internal_error`, and for resource actions `conflict`, `confirmation_required`, `mfa_required` ([ADR 0003](0003-resource-actions.md)).
 - Listing users and sessions is generic: users come from the Eloquent user provider `users`, sessions from the `database` session table.
 - Session IDs never leave the app: each session is identified by the SHA-256 of its ID (`handle`). Revoking all sessions also rotates the remember token.
 - Every user and session command goes through `App\LabKit\UserActions`, a class in the app that implements `Overclock\LabKit\Contracts\UserActions`. Reading users, reading sessions and revoking sessions ask its `allows` method first, which applies the app's Policies; blocking, unblocking and forcing a password reset call the app's own Actions. A denial, or an `AuthorizationException` from the app, answers `forbidden` without data. The package discovers the class by name; without it, only `lab:capabilities` is registered, so access is refused by default.

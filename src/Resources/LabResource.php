@@ -2,6 +2,7 @@
 
 namespace Overclock\LabKit\Resources;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -28,11 +29,39 @@ abstract class LabResource
         return Str::kebab(Str::beforeLast(class_basename(static::class), 'Resource'));
     }
 
+    /**
+     * @return list<Action>
+     */
+    public function actions(): array
+    {
+        return [];
+    }
+
+    public function action(string $name): ?Action
+    {
+        return collect($this->actions())->first(fn (Action $action): bool => $action->name === $name);
+    }
+
     public function allows(Operator $operator): bool
     {
         $policy = Gate::getPolicyFor(static::$model);
 
         return is_object($policy) && method_exists($policy, 'labViewAny') && $policy->labViewAny($operator) === true;
+    }
+
+    public function allowsAction(Operator $operator, Model $record, Action $action): bool
+    {
+        $policy = Gate::getPolicyFor(static::$model);
+
+        return is_object($policy) && method_exists($policy, 'labRun') && $policy->labRun($operator, $record, $action->name) === true;
+    }
+
+    public static function version(Model $record): ?string
+    {
+        $column = $record->usesTimestamps() ? $record->getUpdatedAtColumn() : null;
+        $updatedAt = $column === null ? null : $record->getAttribute($column);
+
+        return $updatedAt instanceof DateTimeInterface ? $updatedAt->format('Y-m-d\TH:i:s.uP') : null;
     }
 
     /**

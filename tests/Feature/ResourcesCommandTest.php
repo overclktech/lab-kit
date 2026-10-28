@@ -34,6 +34,10 @@ it('describes the resources and fields the operator may see', function (): void 
                 ['name' => 'email', 'type' => 'text', 'filterable' => false],
                 ['name' => 'created_at', 'type' => 'datetime', 'filterable' => false],
             ],
+            'actions' => [
+                ['name' => 'rename', 'confirm' => true, 'requires_mfa' => false],
+                ['name' => 'rename-securely', 'confirm' => true, 'requires_mfa' => true],
+            ],
         ]]);
 });
 
@@ -43,7 +47,7 @@ it('lists records newest first with only the declared fields and paginates', fun
     expect($exitCode)->toBe(0)
         ->and($response['data'])->toMatchArray(['resource' => 'member', 'page' => 2, 'per_page' => 2, 'total' => 3])
         ->and(array_column($response['data']['rows'], 'name'))->toBe(['Ana'])
-        ->and(array_keys($response['data']['rows'][0]))->toBe(['id', 'name', 'email', 'created_at'])
+        ->and(array_keys($response['data']['rows'][0]))->toBe(['_key', '_version', 'id', 'name', 'email', 'created_at'])
         ->and(json_encode($response))->not->toContain('secreto');
 });
 
