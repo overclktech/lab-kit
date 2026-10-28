@@ -64,7 +64,11 @@ O `npm install` instala os hooks do Git.
 
 ## Publicar
 
-Versões em semver, por tag (`v1.2.3`) na `main`, com o CHANGELOG atualizado. Os apps instalam pelo repositório privado no GitHub.
+Versões em semver, por tag (`v1.2.3`) na `main`, com o CHANGELOG atualizado. O pacote é público no Packagist (`composer require overclock/lab-kit`), sem credencial no build do app ([ADR 0004](docs/decisions/0004-apache-license-and-public-package.md)).
+
+## Licença
+
+Apache-2.0 ([LICENSE](LICENSE)). A licença não concede uso do nome nem da marca Overclock.
 
 ## Verificações
 
