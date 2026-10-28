@@ -2,7 +2,7 @@
     "name": "overclock/lab-kit",
     "description": "Optional bridge between a Laravel app and the Overclock Lab panel.",
     "type": "library",
-    "license": "proprietary",
+    "license": "Apache-2.0",
     "require": {
         "php": "^8.4",
         "illuminate/support": "^13.0"
